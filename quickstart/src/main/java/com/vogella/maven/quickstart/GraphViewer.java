@@ -9,6 +9,8 @@ import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.graph.SparseGraph;
 import edu.uci.ics.jung.graph.util.EdgeType;
 import edu.uci.ics.jung.visualization.BasicVisualizationServer;
+import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
+import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 import edu.uci.ics.jung.visualization.renderers.Renderer.VertexLabel.Position;
 import java.awt.BasicStroke;
@@ -18,6 +20,7 @@ import java.awt.Paint;
 import java.awt.Stroke;
 import java.util.ArrayList;
 import java.util.Queue;
+import java.util.Random;
 
 import javax.swing.JFrame;
 import org.apache.commons.collections15.Transformer;
@@ -25,10 +28,10 @@ import org.apache.commons.collections15.Transformer;
 public class GraphViewer {
 	
 	//Create Graph
-	Graph<String, Float> g; 
+	Graph<String, String> g; 
 	
 	//Constructor
-	@SuppressWarnings("null")
+	
 	public GraphViewer() {
 		
 		//Create reader object
@@ -38,10 +41,10 @@ public class GraphViewer {
 		reader.run();
 		Queue<Float> probabilityQueue =  reader.probabilityQ();
 		Queue<String> nameQueue = reader.probablityN();
-		Queue<String> tmpQueue = nameQueue;
+		//Queue<String> tmpQueue = nameQueue;
 		
 		//Create new graph
-		g = new DirectedSparseMultigraph<String, Float>();
+		g = new DirectedSparseMultigraph<String, String>();
 				
 		//Data structures to be utilized
 		ArrayList<String> tmpNames = new ArrayList<String>();
@@ -59,43 +62,69 @@ public class GraphViewer {
 		}
 		
 		
-		System.out.println("First test");
+		//System.out.println("First test");
 		
 		//[][][][][][]Debugging[][][][][][][][]
 		//System.out.println(tmpNames.toString());
+
+		//System.out.println(prb.toString());
+		
+//		for (int i = 0; i < tmpNames.size(); i++) {
+//				//	If two tool names are matching strings, then delete the second data point
+//				// - and delete the probability value between the association.
+//			if (tmpNames.get(i).equals(i+1)) {
+//				tmpNames.remove(i);
+//				prb.remove(i);
+//			}
+//		}
+		
+//		tmpNames.remove(0);
+//		tmpNames.remove(0);
+//		prb.remove(0);
+//		System.out.println(tmpNames.toString());
+		
+		
 		
 		
 		//Create Vertices for each tool name
-		for (int i = 0; i < tmpNames.size(); i++) {
+		//[][][][] Issues present here [][][][][][]
+		//tmpNames.size()-1
+		for (int i = 0; i < 25; i++) {
+			int j = 0;
+			Random rnd = new Random();
+			//if (tmpNames.get(i+1) == null) break;
+			String tmpVal = "" + tmpNames.get(i).charAt(0) + tmpNames.get(i).charAt(tmpNames.get(i).length()-1) 
+					+ "," + tmpNames.get(i+1).charAt(0) + tmpNames.get(i+1).charAt(tmpNames.get(i+1).length()-1) + 
+					rnd.nextInt(1000000) + tmpNames.get(i+1).charAt(tmpNames.get(i+1).length()-2);
 			g.addVertex(tmpNames.get(i));
 			
 			if (g.findEdge(tmpNames.get(i), tmpNames.get(i+1)) != null) {
 				g.removeEdge(g.findEdge(tmpNames.get(i), tmpNames.get(i+1)));
+			} else {
+				g.addEdge("P: " + tmpVal + " -> "+ prb.get(i).toString(), tmpNames.get(i), tmpNames.get(i+1));
+				//g.addEdge(new MyEdge(prb.get(i)).toString(), tmpNames.get(i), tmpNames.get(i+1));
 			}
-			
-			System.out.println("======");
-			System.out.println("Fine");
-			System.out.println(g.toString());
-			g.addEdge(prb.get(i), tmpNames.get(i), tmpNames.get(i+1));
-			
 		}
-		
-		
-		//Add directed edges
-//		for (int i = 0; i < probabilityQueue.size(); i++) {
-//			g.addEdge(probabilityQueue.remove(), tmpNames.get(i), tmpNames.get(i+1), EdgeType.DIRECTED);
-//		}
-		
-		
 	}
 	
 	public static void main(String[] args) {
 		GraphViewer gv = new GraphViewer();
-		//Layout<V, E>, VisualizationComponent<V,E>
-		Layout<String, Float> layout = new CircleLayout<String, Float>(gv.g);
-		layout.setSize(new Dimension(300, 300));
-		BasicVisualizationServer<String, Float> vv = new BasicVisualizationServer<String, Float>(layout);
-		vv.setPreferredSize(new Dimension(350, 350));
+		Layout<String, String> layout = new CircleLayout<String, String>(gv.g);
+		layout.setSize(new Dimension(1200, 1200));
+		BasicVisualizationServer<String, String> vv = new BasicVisualizationServer<String, String>(layout);
+		vv.setPreferredSize(new Dimension(1500, 1500));
+		
+		// show vertex and edge labels
+		vv.getRenderContext().setVertexLabelTransformer(new ToStringLabeller<String>());
+		vv.getRenderContext().setEdgeLabelTransformer(new ToStringLabeller<String>());
+		
+		//Create a graph mouse and add it to the visualization component
+		DefaultModalGraphMouse gm = new DefaultModalGraphMouse();
+		gm.setMode(ModalGraphMouse.Mode.TRANSFORMING);
+		//vv.set(gm);
+		
+		
+		
 		
 		//Setup a new vertex to paint transformer..
 		Transformer<String, Paint> vertexPaint = new Transformer<String, Paint>() {
@@ -109,22 +138,25 @@ public class GraphViewer {
 		final Stroke edgeStroke = new BasicStroke(1.0f, BasicStroke.CAP_BUTT,
 				BasicStroke.JOIN_MITER, 10.0f, dash, 0.0f);
 		
-		Transformer<Float, Stroke> edgeStrokeTransformer = new Transformer<Float, Stroke>() {
-			public Stroke transform(Float f) {
+		Transformer<String, Stroke> edgeStrokeTransformer = new Transformer<String, Stroke>() {
+			public Stroke transform(String f) {
 				return edgeStroke;
 			}
 		};
+		
 		vv.getRenderContext().setVertexFillPaintTransformer(vertexPaint);
         vv.getRenderContext().setEdgeStrokeTransformer(edgeStrokeTransformer);
         vv.getRenderContext().setVertexLabelTransformer(new ToStringLabeller());
         vv.getRenderContext().setEdgeLabelTransformer(new ToStringLabeller());
         vv.getRenderer().getVertexLabelRenderer().setPosition(Position.CNTR);        
         
+        
         JFrame frame = new JFrame("Simple Graph View 2");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.getContentPane().add(vv);
         frame.pack();
         frame.setVisible(true);
+        
 	}
 	
 	
