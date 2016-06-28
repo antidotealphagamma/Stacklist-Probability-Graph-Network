@@ -9,6 +9,7 @@ import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.graph.SparseGraph;
 import edu.uci.ics.jung.graph.util.EdgeType;
 import edu.uci.ics.jung.visualization.BasicVisualizationServer;
+import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
@@ -89,6 +90,7 @@ public class GraphViewer {
 		//Create Vertices for each tool name
 		//[][][][] Issues present here [][][][][][]
 		//tmpNames.size()-1
+		//Debugging Edge display
 		for (int i = 0; i < 25; i++) {
 			int j = 0;
 			Random rnd = new Random();
@@ -107,24 +109,26 @@ public class GraphViewer {
 		}
 	}
 	
+	
 	public static void main(String[] args) {
-		GraphViewer gv = new GraphViewer();
-		Layout<String, String> layout = new CircleLayout<String, String>(gv.g);
-		layout.setSize(new Dimension(1200, 1200));
-		BasicVisualizationServer<String, String> vv = new BasicVisualizationServer<String, String>(layout);
-		vv.setPreferredSize(new Dimension(1500, 1500));
-		
-		// show vertex and edge labels
-		vv.getRenderContext().setVertexLabelTransformer(new ToStringLabeller<String>());
-		vv.getRenderContext().setEdgeLabelTransformer(new ToStringLabeller<String>());
-		
-		//Create a graph mouse and add it to the visualization component
-		DefaultModalGraphMouse gm = new DefaultModalGraphMouse();
-		gm.setMode(ModalGraphMouse.Mode.TRANSFORMING);
-		//vv.set(gm);
-		
-		
-		
+		 	GraphViewer sgv = new GraphViewer(); // Creates the graph...
+	        // Layout<V, E>, VisualizationComponent<V,E>
+	        Layout<String, String> layout = new CircleLayout(sgv.g);
+	        layout.setSize(new Dimension(300,300));
+	        VisualizationViewer<String,String> vv = new VisualizationViewer<String,String>(layout);
+	        vv.setPreferredSize(new Dimension(350,350));
+	        // Show vertex and edge labels
+	        vv.getRenderContext().setVertexLabelTransformer(new ToStringLabeller());
+	        vv.getRenderContext().setEdgeLabelTransformer(new ToStringLabeller());
+	        // Create a graph mouse and add it to the visualization component
+	        DefaultModalGraphMouse gm = new DefaultModalGraphMouse();
+	        gm.setMode(ModalGraphMouse.Mode.TRANSFORMING);
+	        vv.setGraphMouse(gm); 
+	        JFrame frame = new JFrame("Interactive Graph View 1");
+	        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	        frame.getContentPane().add(vv);
+	        frame.pack();
+	        frame.setVisible(true);
 		
 		//Setup a new vertex to paint transformer..
 		Transformer<String, Paint> vertexPaint = new Transformer<String, Paint>() {
@@ -144,18 +148,9 @@ public class GraphViewer {
 			}
 		};
 		
-		vv.getRenderContext().setVertexFillPaintTransformer(vertexPaint);
+		//vv.getRenderContext().setVertexFillPaintTransformer(vertexPaint);
         vv.getRenderContext().setEdgeStrokeTransformer(edgeStrokeTransformer);
-        vv.getRenderContext().setVertexLabelTransformer(new ToStringLabeller());
-        vv.getRenderContext().setEdgeLabelTransformer(new ToStringLabeller());
         vv.getRenderer().getVertexLabelRenderer().setPosition(Position.CNTR);        
-        
-        
-        JFrame frame = new JFrame("Simple Graph View 2");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.getContentPane().add(vv);
-        frame.pack();
-        frame.setVisible(true);
         
 	}
 	
