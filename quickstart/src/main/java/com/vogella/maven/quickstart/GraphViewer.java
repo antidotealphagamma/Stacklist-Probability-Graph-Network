@@ -1,5 +1,6 @@
 package com.vogella.maven.quickstart;
 
+import edu.uci.ics.jung.algorithms.cluster.EdgeBetweennessClusterer;
 import edu.uci.ics.jung.algorithms.layout.CircleLayout;
 import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.algorithms.shortestpath.DijkstraShortestPath;
@@ -23,6 +24,8 @@ import java.awt.Paint;
 import java.awt.Stroke;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Random;
@@ -33,30 +36,64 @@ import org.apache.commons.lang3.StringUtils;
 import javax.swing.JFrame;
 import org.apache.commons.collections15.Transformer;
 
+//Notes: -> Clean dataset for userlist categories
+
 public class GraphViewer {
 	
 	//Create Graph
 	private static Graph<String, String> g; 
-	private ArrayList<String> tmpNames = new ArrayList<String>();
-	private ArrayList<Float> prb = new ArrayList<Float>();
+	private static ArrayList<String> tmpNames = new ArrayList<String>();
+	private static ArrayList<Float> prb = new ArrayList<Float>();
 	private static Scanner scanner = new Scanner(System.in);
 	
 	/** Helper Functions **/ 
 	
 	//Sort String Array by alphabetical order while respectively reordering the probability array
-
+	public static void mergeSort() {
+		//Code here
+		
+//		for (int i = 0; i < tmpNames.size()/2; i++) {
+//			String tmp = "";
+//			tmp = tmpNames.get(i);
+//			
+//			//Check the character at 
+//			if (tmp.compareTo(tmpNames.get(i+2)) > 0) {
+//				
+//			}
+//		}
+		
+		//Test
+		for (int j = 0; j < tmpNames.size(); j++) {
+			//System.out.println(prb.get(j));
+			//System.out.println(tmpNames.get(j));
+		}
+	}
+	
+	
+	public void createTable() {
+		LinkedHashMap<String, Float> table = new LinkedHashMap<String, Float>();
+		for (int i = 0; i < tmpNames.size(); i++) {
+			table.put(tmpNames.get(i), prb.get(i));
+		}
+		System.out.println(table.toString());
+		
+	}
+	
+	//Needs arrays to be sorted
 	//Uses binary search in order to find the starting location of a company in an arraylist
 	public int isolateField(String company, int min, int max) {
 		int mid = (min + max) / 2;
 		if (tmpNames.get(mid).equals(company)) return mid;
-		else if (tmpNames.get(mid).compareTo(company) >0) {
+		else if (tmpNames.get(mid).compareTo(company) > 0) {
 			return isolateField(company, min, mid-1);
 		} else {
 			return isolateField(company, mid+1, max);
 		}
-	}
+	};
 	
-	//Finds exactly how many instances of 
+
+	
+	//Finds exactly how many instances of a company occurs in an array
 	public int endingField(String company) {
 		int startPos = isolateField(company, 0, tmpNames.size());
 		int count = 0;
@@ -64,41 +101,39 @@ public class GraphViewer {
 			if (tmpNames.get(i).equals(company)) count++;
 		}
 		return count;
-	}
+	};
 	
+
+
 	/** Constructor **/ 
+	@SuppressWarnings("unchecked")
 	public GraphViewer() {
 		
 		//Create reader object
 		ReadCVS reader = new ReadCVS();
 		
-		//Run main method so that we have all our data in the two Queues
-		//Sizes are equal
+		//Run main method, retrieve Queue data and store in local variables
 		reader.run();
 		Queue<Float> probabilityQueue =  reader.probabilityQ();
 		Queue<String> nameQueue = reader.probablityN();
 		
-		Map<String, Float> toolMap = new HashMap<String, Float>();
-		
-//		for (int i = 0; i < probabilityQueue.size(); i++) {
-//			toolMap.put(nameQueue.remove()+":"+nameQueue.remove(), probabilityQueue.remove());
-//		}
-		
-		//Queue<String> tmpQueue = nameQueue;
 		
 		//Create new graph
 		g = new DirectedSparseMultigraph<String, String>();
-				
 		
-		
+		//Add the names from the queue to an ArrayList
 		while (nameQueue.size() != 0) {
 			tmpNames.add(nameQueue.remove());
 		}
 		
+		//Add the probabilities from a queue to an ArrayList
 		while (probabilityQueue.size() != 0) {
 			prb.add(probabilityQueue.remove());
 		}
 		
+		
+		//mergeSort();
+		this.createTable();
 		
 		//Grab input from user
 		System.out.println("Enter a tech tool to graph: ");
@@ -108,9 +143,13 @@ public class GraphViewer {
 		int nSize = endingField(in);
 		int endPos = startPos + nSize;
 		
+		System.out.println(nSize);
+		
+		
 		//Add edges and vertices to the Graph object
 		for (int i = startPos; i < endPos; i++) {
-			int j = 0;
+			//int j = 0;
+			System.out.println(nSize);
 			Random rnd1 = new Random();
 			Random rnd2 = new Random();
 			//if (tmpNames.get(i+1) == null) break;
@@ -125,10 +164,19 @@ public class GraphViewer {
 				g.addEdge(tmpVal + "P: " + prb.get(i).toString(), tmpNames.get(i), tmpNames.get(i+1));
 			}
 		}
+		
+		
 	}
 
 	public static void main(String[] args) {
 		 	GraphViewer sgv = new GraphViewer(); // Creates the graph...
+		 	
+		 	//Cluster graph
+//		 	EdgeBetweennessClusterer<String, Float> cluster = new EdgeBetweennessClusterer<String, Float>(500);
+//			
+//			cluster.transform((Graph<String, Float>) sgv);
+//			System.out.println(cluster.getEdgesRemoved().toString());
+		 	
 	        // Layout<V, E>, VisualizationComponent<V,E>
 	        Layout<String, String> layout = new CircleLayout(sgv.g);
 	        layout.setSize(new Dimension(1000,1000));
