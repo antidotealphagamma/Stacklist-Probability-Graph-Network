@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Random;
 import java.util.Scanner;
+import java.util.TreeMap;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -70,14 +71,6 @@ public class GraphViewer {
 	}
 	
 	
-	public void createTable() {
-		LinkedHashMap<String, Float> table = new LinkedHashMap<String, Float>();
-		for (int i = 0; i < tmpNames.size(); i++) {
-			table.put(tmpNames.get(i), prb.get(i));
-		}
-		System.out.println(table.toString());
-		
-	}
 	
 	//Needs arrays to be sorted
 	//Uses binary search in order to find the starting location of a company in an arraylist
@@ -106,7 +99,6 @@ public class GraphViewer {
 
 
 	/** Constructor **/ 
-	@SuppressWarnings("unchecked")
 	public GraphViewer() {
 		
 		//Create reader object
@@ -133,23 +125,35 @@ public class GraphViewer {
 		
 		
 		//mergeSort();
-		this.createTable();
+		//this.createTable();
+		
+		LinkedHashMap<String, Float> table = new LinkedHashMap<String, Float>();
+		for (int i = 0; i < tmpNames.size(); i++) {
+			table.put(tmpNames.get(i), prb.get(i));
+		}
+		
+		System.out.println(table.toString());
+		
+		Map<String, Float> sortedMap = new TreeMap<String, Float>(table);
+		
 		
 		//Grab input from user
 		System.out.println("Enter a tech tool to graph: ");
 		String in = scanner.nextLine();
 		
-		int startPos = isolateField(in, 0, tmpNames.size());
-		int nSize = endingField(in);
-		int endPos = startPos + nSize;
 		
-		System.out.println(nSize);
+		
+		//int startPos = isolateField(in, 0, tmpNames.size());
+		//int nSize = endingField(in);
+		//int endPos = startPos + nSize;
+		
+		//System.out.println(nSize);
 		
 		
 		//Add edges and vertices to the Graph object
-		for (int i = startPos; i < endPos; i++) {
+		for (int i = 0; i < sortedMap.size(); i++) {
 			//int j = 0;
-			System.out.println(nSize);
+			//System.out.println(nSize);
 			Random rnd1 = new Random();
 			Random rnd2 = new Random();
 			//if (tmpNames.get(i+1) == null) break;
@@ -164,20 +168,15 @@ public class GraphViewer {
 				g.addEdge(tmpVal + "P: " + prb.get(i).toString(), tmpNames.get(i), tmpNames.get(i+1));
 			}
 		}
-		
-		
+			
 	}
 
 	public static void main(String[] args) {
+		
 		 	GraphViewer sgv = new GraphViewer(); // Creates the graph...
 		 	
-		 	//Cluster graph
-//		 	EdgeBetweennessClusterer<String, Float> cluster = new EdgeBetweennessClusterer<String, Float>(500);
-//			
-//			cluster.transform((Graph<String, Float>) sgv);
-//			System.out.println(cluster.getEdgesRemoved().toString());
-		 	
 	        // Layout<V, E>, VisualizationComponent<V,E>
+		 	
 	        Layout<String, String> layout = new CircleLayout(sgv.g);
 	        layout.setSize(new Dimension(1000,1000));
 	        VisualizationViewer<String,String> vv = new VisualizationViewer<String,String>(layout);
